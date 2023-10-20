@@ -1,7 +1,6 @@
 import math
 from tkinter import *
 
-
 # ---------------------------- CONSTANTS ------------------------------- #
 PINK = "#e2979c"
 RED = "#e7305b"
@@ -11,24 +10,62 @@ FONT_NAME = "Courier"
 WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
+REPS = 0
+TIMER = None
 
 
 # ---------------------------- TIMER RESET ------------------------------- # 
+def reset_timer():
+    global REPS
+    REPS = 0
+
+    # noinspection TIMER giving a warning
+    window.after_cancel(TIMER)
+    canvas.itemconfig(timer_text, text="00:00")
+    status.config(text="Timer")
+    checkmarks.config(text="")
+
 
 # ---------------------------- TIMER MECHANISM ------------------------------- #
 def start_timer():
-    count_down(SHORT_BREAK_MIN * 60)
+    global REPS
+    REPS = REPS + 1
+
+    work_timer = WORK_MIN * 60
+    short_break = SHORT_BREAK_MIN * 60
+    long_break = LONG_BREAK_MIN * 60
+
+    # status = Label(text="Timer", font=(FONT_NAME, 35, "bold"))
+    # status.config(bg=YELLOW, fg=GREEN)
+    # status.grid(column=1, row=0)
+
+    if REPS == 1 or REPS == 3 or REPS == 5 or REPS == 7:
+        count_down(work_timer)
+        status.config(text="Work", bg=YELLOW, fg=GREEN)
+        marks = ""
+        for _ in  range(math.floor(REPS/2)):
+            marks += "✔"
+        checkmarks.config(text=marks)
+    elif REPS == 2 or REPS == 4 or REPS == 6:
+        count_down(short_break)
+        status.config(text="Break", bg=YELLOW, fg=PINK)
+    elif REPS == 8:
+        count_down(long_break)
+        status.config(text="BREEEAK", bg=YELLOW, fg=RED)
 
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 def count_down(count):
+    global TIMER
 
     count_min = math.floor(count/60)
     count_sec = count % 60
 
     canvas.itemconfig(timer_text, text=f"{count_min}:{count_sec}")
     if count > 0:
-        window.after(1000, count_down, count - 1)
+        TIMER = window.after(1000, count_down, count - 1)
+    else:
+        start_timer()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -55,12 +92,12 @@ start_button.grid(column=0, row=2)
 
 
 # ✔ Checkmarks
-status = Label(text="✔✔✔✔", font=(FONT_NAME, 15, "bold"))
-status.config(bg=YELLOW, fg=GREEN)
-status.grid(column=1, row=3)
+checkmarks = Label(font=(FONT_NAME, 15, "bold"))
+checkmarks.config(bg=YELLOW, fg=GREEN)
+checkmarks.grid(column=1, row=3)
 
 # Reset button
-reset_button = Button(text="Reset")
+reset_button = Button(text="Reset", command=reset_timer)
 reset_button.grid(column=2, row=2)
 
 
